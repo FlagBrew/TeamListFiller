@@ -45,24 +45,24 @@ void infoDisp(const char* message) {
 
 		if (hidKeysDown() & KEY_A) break;
 		
-		pp2d_begin_draw(GFX_TOP);
+		pp2d_begin_draw(GFX_TOP, GFX_LEFT);
 			pp2d_draw_texture(WARNINGTOP, 0, 0);
 			pp2d_draw_text_center(GFX_TOP, 95, FONT_SIZE_15, FONT_SIZE_15, WHITE, message);
 			pp2d_draw_text_center(GFX_TOP, 130, FONT_SIZE_12, FONT_SIZE_12, WHITE, "Press A to continue.");
 		
-			pp2d_draw_on(GFX_BOTTOM);
+			pp2d_draw_on(GFX_BOTTOM, GFX_LEFT);
 			pp2d_draw_texture(WARNINGBOTTOM, 0, 0);
 		pp2d_end_draw();
 	}
 }
 
 void freezeMsg(const char* message) {
-	pp2d_begin_draw(GFX_TOP);
+	pp2d_begin_draw(GFX_TOP, GFX_LEFT);
 		pp2d_draw_texture(WARNINGTOP, 0, 0);
 		pp2d_draw_text_center(GFX_TOP, 95, FONT_SIZE_15, FONT_SIZE_15, WHITE, message);
 		pp2d_draw_text_center(GFX_TOP, 130, FONT_SIZE_12, FONT_SIZE_12, WHITE, "Please wait.");
 	
-		pp2d_draw_on(GFX_BOTTOM);
+		pp2d_draw_on(GFX_BOTTOM, GFX_LEFT);
 		pp2d_draw_texture(WARNINGBOTTOM, 0, 0);
 	pp2d_end_draw();
 }
@@ -72,7 +72,7 @@ void printBottomIndications(const char* message) {
 }
 
 void gameSelectorMenu(int n) {
-	pp2d_begin_draw(GFX_TOP);
+	pp2d_begin_draw(GFX_TOP, GFX_LEFT);
 		printMenuTop();
 		pp2d_draw_text_center(GFX_TOP, 6, FONT_SIZE_9, FONT_SIZE_9, BLUE, "Cart has priority over digital copy.");
 		pp2d_draw_texture(BORDER, 146 + 60 * n, 112);
@@ -80,7 +80,7 @@ void gameSelectorMenu(int n) {
 		for (int i = 0; i < 2; i++) 
 			pp2d_draw_text(142 + 60 * i + (68 - pp2d_get_text_width(gamesList[i], FONT_SIZE_18, FONT_SIZE_18)) / 2, 129, FONT_SIZE_18, FONT_SIZE_18, LIGHTBLUE, gamesList[i]);
 	
-		pp2d_draw_on(GFX_BOTTOM);
+		pp2d_draw_on(GFX_BOTTOM, GFX_LEFT);
 		printMenuBottom();
 		printBottomIndications("Move your DPAD. Press A to continue, B to exit.");
 	pp2d_end_draw();

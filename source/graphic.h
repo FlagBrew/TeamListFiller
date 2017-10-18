@@ -19,7 +19,7 @@ Copyright (C) 2017 Bernardo Giordano
 
 #pragma once
 
-#include "pp2d/pp2d/pp2d.h"
+#include "../../common/pp2d/pp2d.h"
 
 #define WARNINGTOP 1
 #define WARNINGBOTTOM 2
