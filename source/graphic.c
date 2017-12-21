@@ -19,9 +19,8 @@ Copyright (C) 2017 Bernardo Giordano
 
 #include <stdio.h>
 #include "graphic.h"
-#include "editor.h"
 
-char *gamesList[] = {"Sun", "Moon"};
+char *gamesList[] = {"US", "UM"};
 
 void GUIElementsInit() {
 	pp2d_load_texture_png(WARNINGTOP, "romfs:/res/Warning Top.png");

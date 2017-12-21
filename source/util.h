@@ -21,8 +21,7 @@ Copyright (C) 2017 Bernardo Giordano
 
 #include <stdlib.h>
 #include <3ds.h>
-
-#define POKEBANK 0x00040000000C9B00
+#include "pkx.h"
 
 void loadPersonal();
 bool isHBL();

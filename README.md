@@ -1,10 +1,10 @@
-**Automatic TeamList Filler**
+**Automatic Teamlist Filler**
 
 ## Usage
 
 This software fills a Team List form directly from console. Plug your cart and it will export infos from the **first Battle Box**.
 
-You can find the exported Team List in your console's **SD card**, at **`/vgc/VGC17-YYYYMMDD-NameSurname.png`**. You'll only need to print it.
+You can find the exported Team List in your console's **SD card**, at **`/vgc/VGC18-YYYYMMDD-NameSurname.png`**. You'll only need to print it.
 
 Always **double check** and **make sure that the dumped data are coherent with your in-game team**! 
 
@@ -12,11 +12,11 @@ Always **double check** and **make sure that the dumped data are coherent with y
 
 ## Compiling
 
-You need devKitPro, ctrulib, freetype and libpng to be able to compile this.
+You need devKitPro, libctru, citro3d, freetype, libpng and zlib to be able to compile this.
 
 ## Screenshots
 
-![vgc17](assets/sample.png)
+![vgc18](assets/sample.png)
  
 ## Credits
 
@@ -26,10 +26,10 @@ You need devKitPro, ctrulib, freetype and libpng to be able to compile this.
 
 ## License
 
-This file is part of TeamListFiller
+This file is part of TeamlistFiller
 
-Copyright (C) 2017 Bernardo Giordano
-
+> Copyright (C) 2017 Bernardo Giordano
+>
 >    This program is free software: you can redistribute it and/or modify
 >    it under the terms of the GNU General Public License as published by
 >    the Free Software Foundation, either version 3 of the License, or

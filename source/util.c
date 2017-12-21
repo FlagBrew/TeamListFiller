@@ -23,7 +23,6 @@ Copyright (C) 2017 Bernardo Giordano
 #include <string.h>
 #include <time.h>
 #include <sys/stat.h>
-#include "editor.h"
 #include "util.h"
 #include "graphic.h"
 
@@ -49,10 +48,13 @@ void loadPersonal() {
 }
 
 bool isHBL() {
+#if ROSALINA_3DSX
+	return false;
+#else
     u64 id;
     APT_GetProgramID(&id);
-
     return id != 0x000400000EC30000;
+#endif
 }
 
 void fsStart() {
@@ -70,7 +72,7 @@ void fsEnd() {
 }
 
 bool openSaveArch(FS_Archive *out, u64 id) {
-	if (id == POKEBANK || !isHBL()) { //If we're using Pokebank or CIA
+	if (id == 0x00040000000C9B00 || !isHBL()) { //If we're using Pokebank or CIA
 		u32 cardPath[3] = {MEDIATYPE_GAME_CARD, id, id >> 32}; //Card
 		if (R_FAILED(FSUSER_OpenArchive(out, ARCHIVE_USER_SAVEDATA, (FS_Path){PATH_BINARY, 0xC, cardPath}))) { //If that fails, try digital
 			u32 sdPath[3] = {MEDIATYPE_SD, id, id >> 32};

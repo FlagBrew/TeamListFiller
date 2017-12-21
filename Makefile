@@ -10,14 +10,14 @@ TOPDIR ?= $(CURDIR)
 include $(DEVKITARM)/3ds_rules
 
 # Your values.
-APP_TITLE           :=	TeamListFiller
-APP_DESCRIPTION     :=	TeamList Filler
+APP_TITLE           :=	Teamlist Filler
+APP_DESCRIPTION     :=	Teamlist Filler
 APP_AUTHOR          :=	Bernardo Giordano
 
 TARGET              :=	$(subst $e ,_,$(notdir $(APP_TITLE)))
-OUTDIR              :=	output
+OUTDIR              :=	out
 BUILD               :=	build
-SOURCES             :=	../common/pp2d source
+SOURCES             :=	source/pp2d source
 INCLUDES            :=	include
 ROMFS               :=	assets/romfs
 
@@ -37,13 +37,13 @@ LOGO                :=
 # If left blank, makerom will use default values (0xff3ff and CTR-P-CTAP, respectively)
 # Be careful if UNIQUE_ID is the same as other apps: it will overwrite the previously installed one
 UNIQUE_ID           :=	0xEC300
-PRODUCT_CODE        :=	CTR-HB-VG17
+PRODUCT_CODE        :=	CTR-HB-VG18
 
 VERSION_MAJOR := 1
-VERSION_MINOR := 1
+VERSION_MINOR := 2
 VERSION_MICRO := 0
 
-ROSALINA := 0
+ROSALINA := 1
 
 # Don't really need to change this
 ICON_FLAGS          :=	nosavebackups,visible
@@ -55,7 +55,8 @@ ARCH	:=	-march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft
 
 CFLAGS	:=	-g -Wall -Wextra -O2 -mword-relocations \
 			-fomit-frame-pointer -ffunction-sections \
-			$(ARCH)
+			$(ARCH) \
+			-DROSALINA_3DSX=${ROSALINA}
 
 CFLAGS	+=	$(INCLUDE) -DARM11 -D_3DS -D_GNU_SOURCE
 

@@ -1,27 +1,24 @@
-/* This file is part of TeamListFiller
-
-Copyright (C) 2017 Bernardo Giordano
-	 
->    This program is free software: you can redistribute it and/or modify
->    it under the terms of the GNU General Public License as published by
->    the Free Software Foundation, either version 3 of the License, or
->    (at your option) any later version.
+/*  This file is part of PKSM
+>	Copyright (C) 2016/2017 Bernardo Giordano
 >
->    This program is distributed in the hope that it will be useful,
->    but WITHOUT ANY WARRANTY; without even the implied warranty of
->    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
->    GNU General Public License for more details.
+>   This program is free software: you can redistribute it and/or modify
+>   it under the terms of the GNU General Public License as published by
+>   the Free Software Foundation, either version 3 of the License, or
+>   (at your option) any later version.
 >
->    You should have received a copy of the GNU General Public License
->    along with this program.  If not, see <http://www.gnu.org/licenses/>.
->    See LICENSE for information.
+>   This program is distributed in the hope that it will be useful,
+>   but WITHOUT ANY WARRANTY; without even the implied warranty of
+>   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+>   GNU General Public License for more details.
+>
+>   You should have received a copy of the GNU General Public License
+>   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+>   See LICENSE for information.
 */
 
-#include <3ds.h>
-#include <string.h>
-#include "graphic.h"
-#include "editor.h"
-#include "util.h"
+#include "pkx.h"
+
+const int lookupHT[] = {0, 1, 2, 5, 3, 4};
 
 u32 expTable[100][6] = {
   {0, 0, 0, 0, 0, 0},
@@ -126,9 +123,30 @@ u32 expTable[100][6] = {
   {1000000, 600000, 1640000, 1059860, 800000, 1250000}
 };
 
-u32 seedStep(const u32 seed) { return (seed * 0x41C64E6D + 0x00006073) & 0xFFFFFFFF; }
+u32 pkx_seedstep(const u32 seed) { 
+	return seed * 0x41C64E6D + 0x00006073; 
+}
 
-void shuffleArray(u8* pkmn, const u32 encryptionkey) {
+u32 pkx_get_save_address(const int boxnumber, const int indexnumber) {
+    int boxpos = 0x05200;
+	return boxpos + (232 * 30 * boxnumber) + (indexnumber * 232);
+}
+
+void pkx_calculate_checksum(u8* data) {
+    u16 chk = pkx_return_checksum(data);
+    memcpy(data + 6, &chk, 2);
+}
+
+u16 pkx_return_checksum(u8* data) {
+	u16 chk = 0;
+	for (int i = 8; i < 232; i += 2)
+	{
+		chk += *(u16*)(data + i);
+	}
+	return chk;
+}
+
+void pkx_shuffle_array(u8* pkmn, const u32 encryptionkey) {
     const int BLOCKLENGHT = 56;
 
     u8 seed = (((encryptionkey & 0x3E000) >> 0xD) % 24);
@@ -139,10 +157,10 @@ void shuffleArray(u8* pkmn, const u32 encryptionkey) {
     int dloc[24] = { 3, 2, 3, 2, 1, 1, 3, 2, 3, 2, 1, 1, 3, 2, 3, 2, 1, 1, 0, 0, 0, 0, 0, 0 };
     int ord[4] = {aloc[seed], bloc[seed], cloc[seed], dloc[seed]};
 
-    char pkmncpy[PKMNLENGTH];
+    char pkmncpy[232];
     char tmp[BLOCKLENGHT];
 
-    memcpy(&pkmncpy, pkmn, PKMNLENGTH);
+    memcpy(&pkmncpy, pkmn, 232);
 
     for (int i = 0; i < 4; i++) {
         memcpy(tmp, pkmncpy + 8 + BLOCKLENGHT * ord[i], BLOCKLENGHT);
@@ -150,53 +168,110 @@ void shuffleArray(u8* pkmn, const u32 encryptionkey) {
     }
 }
 
-void decryptPkmn(u8* pkmn) {
-    const int ENCRYPTIONKEYPOS = 0x0;
-    const int ENCRYPTIONKEYLENGHT = 4;
-    const int CRYPTEDAREAPOS = 0x08;
-
-    u32 encryptionkey;
-    memcpy(&encryptionkey, &pkmn[ENCRYPTIONKEYPOS], ENCRYPTIONKEYLENGHT);
+void pkx_decrypt(u8* pkmn) {
+    u32 encryptionkey = *(u32*)(pkmn);
     u32 seed = encryptionkey;
 
     u16 temp;
-    for (int i = CRYPTEDAREAPOS; i < PKMNLENGTH; i += 2) {
+    for (int i = 0x08; i < 232; i += 2) {
         memcpy(&temp, &pkmn[i], 2);
-        temp ^= (seedStep(seed) >> 16);
-        seed = seedStep(seed);
+        temp ^= (pkx_seedstep(seed) >> 16);
+        seed = pkx_seedstep(seed);
         memcpy(&pkmn[i], &temp, 2);
     }
 
-    shuffleArray(pkmn, encryptionkey);
+    pkx_shuffle_array(pkmn, encryptionkey);
 }
 
-int getPkmnAddress(const int boxnumber, const int indexnumber) {
-    int boxpos = 0x04E00;
-	return boxpos + (PKMNLENGTH * 30 * boxnumber) + (indexnumber * PKMNLENGTH);
+void pkx_get(u8* mainbuf, const int boxnumber, const int indexnumber, u8* pkmn) {
+    memcpy(pkmn, &mainbuf[pkx_get_save_address(boxnumber, indexnumber)], 232);
+    pkx_decrypt(pkmn);
 }
 
-void getPkmn(u8* mainbuf, const int boxnumber, const int indexnumber, u8* pkmn) {
-    memcpy(pkmn, &mainbuf[getPkmnAddress(boxnumber, indexnumber)], PKMNLENGTH);
-    decryptPkmn(pkmn);
+u8 pkx_get_HT(u8* pkmn) { 
+	return *(u8*)(pkmn + 0xDE); 
 }
 
-int lookupHT[] = {0, 1, 2, 5, 3, 4};
+u8 pkx_get_gender(u8* pkmn) { 
+	return ((*(u8*)(pkmn + 0x1D)) >> 1) & 0x3; 
+}
 
-u8 getGender(u8* pkmn) { return ((*(u8*)(pkmn + 0x1D)) >> 1) & 0x3; }
-u8 getAbility(u8* pkmn) { return *(u8*)(pkmn + 0x14); }
-u8 getHT(u8* pkmn) { return *(u8*)(pkmn + 0xDE); }
-u8 getForm(u8* pkmn) { return ((*(u8*)(pkmn + 0x1D)) >> 3); }
-u16 getItem(u8* pkmn) { return *(u16*)(pkmn + 0x0A); }
-u8 getHPType(u8* pkmn) { return 15 * ((getIV(pkmn, 0) & 1) + 2 * (getIV(pkmn, 1) & 1) + 4 * (getIV(pkmn, 2) & 1) + 8 * (getIV(pkmn, 3) & 1) + 16 * (getIV(pkmn, 4) & 1) + 32 * (getIV(pkmn, 5) & 1)) / 63; }
+u8 pkx_get_ability(u8* pkmn) { 
+	return *(u8*)(pkmn + 0x14); 
+}
 
-u16 getStat(u8* pkmn, const int stat) {
-    u16 tempspecies = getPokedexNumber(pkmn);
-    if (getForm(pkmn))
-		memcpy(&tempspecies, &personal.pkmData[getPokedexNumber(pkmn)][0x1C], 2);
+u8 pkx_get_form(u8* pkmn) { 
+	return ((*(u8*)(pkmn + 0x1D)) >> 3); 
+}
 
-    u8 mult = 10;
+u16 pkx_get_item(u8* pkmn) { 
+	return *(u16*)(pkmn + 0x0A); 
+}
+
+u8 pkx_get_hp_type(u8* pkmn) { 
+	return 15 * ((pkx_get_iv(pkmn, 0)& 1) 
+		  + 2 * (pkx_get_iv(pkmn, 1) & 1) 
+		  + 4 * (pkx_get_iv(pkmn, 2) & 1) 
+		  + 8 * (pkx_get_iv(pkmn, 3) & 1) 
+		  + 16 * (pkx_get_iv(pkmn, 4) & 1) 
+		  + 32 * (pkx_get_iv(pkmn, 5) & 1)) / 63; 
+}
+
+u8 pkx_get_ot_gender(u8* pkmn) { 
+	return ((*(u8*)(pkmn + 0xDD)) >> 7); 
+}
+
+bool pkx_is_egg(u8* pkmn) {
+    u32 buf = *(u32*)(pkmn + 0x74);
+    buf = buf >> 30;
+    buf = buf & 0x1;
+	return buf == 1 ? true : false;
+}
+
+u32 pkx_get_pid(u8* pkmn) {
+    return *(u32*)(pkmn + 0x18);
+}
+
+u16 pkx_get_move(u8* pkmn, const int nmove) {
+	return *(u16*)(pkmn + 0x5A + nmove*2);
+}
+
+u16 pkx_get_species(u8* pkmn) {
+    return *(u16*)(pkmn + 0x08);
+}
+
+u8 pkx_get_level(u8* pkmn) {
+	u32 exp = *(u32*)(pkmn + 0x10);
+	u8 xpType = personal.pkmData[pkx_get_species(pkmn)][0x08];
+	
+	u8 iterLevel = 1;
+	while (iterLevel < 100 && exp >= expTable[iterLevel][xpType]) 
+		iterLevel++;
+	return iterLevel;
+}
+
+u16 pkx_get_form_species_number(u8 *pkmn) {	
+	u16 tempspecies = pkx_get_species(pkmn);
+	u8 form = pkx_get_form(pkmn);
+	u8 formcnt = personal.pkmData[tempspecies][0x0E];
+
+	if (form && form < formcnt) {
+		u16 backspecies = tempspecies;
+		memcpy(&tempspecies, &personal.pkmData[tempspecies][0x0C], 2);
+		if (!tempspecies)
+			tempspecies = backspecies;
+		else if (form < formcnt)
+			tempspecies += form - 1;
+	}
+	
+	return tempspecies;
+}
+
+u16 pkx_get_stat(u8* pkmn, const int stat) {
+    u16 tempspecies = pkx_get_form_species_number(pkmn);
+
+    u8 mult = 10, basestat = 0;
     u16 final;
-    u8 basestat = 0;
     if (stat == 0) basestat = personal.pkmData[tempspecies][0x0];
     if (stat == 1) basestat = personal.pkmData[tempspecies][0x1];
     if (stat == 2) basestat = personal.pkmData[tempspecies][0x2];
@@ -205,60 +280,54 @@ u16 getStat(u8* pkmn, const int stat) {
     if (stat == 5) basestat = personal.pkmData[tempspecies][0x5];
     
     if (stat == 0)
-        final = 10 + ((2 * basestat) + ((((getHT(pkmn) >> lookupHT[stat]) & 1) == 1) ? 31 : getIV(pkmn, stat)) + getEV(pkmn, stat) / 4 + 100) * getLevel(pkmn) / 100;
+        final = 10 + ((2 * basestat) + ((((pkx_get_HT(pkmn) >> lookupHT[stat]) & 1) == 1) ? 31 : pkx_get_iv(pkmn, stat)) + pkx_get_ev(pkmn, stat) / 4 + 100) * pkx_get_level(pkmn) / 100;
     else
-        final = 5 + (2 * basestat + ((((getHT(pkmn) >> lookupHT[stat]) & 1) == 1) ? 31 : getIV(pkmn, stat)) + getEV(pkmn, stat) / 4) * getLevel(pkmn) / 100; 
+        final = 5 + (2 * basestat + ((((pkx_get_HT(pkmn) >> lookupHT[stat]) & 1) == 1) ? 31 : pkx_get_iv(pkmn, stat)) + pkx_get_ev(pkmn, stat) / 4) * pkx_get_level(pkmn) / 100; 
     
-    if (getNature(pkmn) / 5 + 1 == stat)
+    if (pkx_get_nature(pkmn) / 5 + 1 == stat)
         mult++;
-    if (getNature(pkmn) % 5 + 1 == stat)
+    if (pkx_get_nature(pkmn) % 5 + 1 == stat)
         mult--;
   
     final = final * mult / 10;
     return final;
 }
 
-u8 getLevel(u8* pkmn) {
-	u32 exp;
-	u8 xpType = personal.pkmData[getPokedexNumber(pkmn)][0x15];
-	u8 iterLevel = 1;
-	memcpy(&exp, &pkmn[0x10], EXPPOINTLENGTH);
-
-	while (iterLevel < 100 && exp >= expTable[iterLevel][xpType]) iterLevel++;
-	return iterLevel;
+u8 pkx_get_nature(u8* pkmn) {
+	return *(u8*)(pkmn + 0x1C);
 }
 
-u16 getMove(u8* pkmn, int nmove) {
-    u16 movebuffer[4];
-    memcpy(&movebuffer, &pkmn[0x5A], MOVELENGTH*4);
-    return movebuffer[nmove];
+u8 pkx_get_ev(u8* pkmn, const int stat) {
+	return *(u8*)(pkmn + 0x1E + stat);
 }
 
-u16 getPokedexNumber(u8* pkmn) {
-    u16 pokedexnumber;
-    memcpy(&pokedexnumber, &pkmn[0x08], POKEDEXNUMBERLENGTH);
-    return pokedexnumber;
-}
-
-u8 getNature(u8* pkmn) {
-    u8 nature;
-    memcpy(&nature, &pkmn[0x1C], NATURELENGTH);
-    return nature;
-}
-
-u8 getEV(u8* pkmn, const int stat) {
-    u8 evbuffer[6];
-    memcpy(evbuffer, &pkmn[0x1E], EVLENGTH * 6);
-    return evbuffer[stat];
-}
-
-u8 getIV(u8* pkmn, const int stat) {
-    u32 buffer;
-    u8 toreturn;
-
-    memcpy(&buffer, &pkmn[0x74], IVLENGTH);
+u8 pkx_get_iv(u8* pkmn, const int stat) {
+    u32 buffer = *(u32*)(pkmn + 0x74);
     buffer = buffer >> 5 * stat;
     buffer = buffer & 0x1F;
-    memcpy(&toreturn, &buffer, 1);
-    return toreturn;
+	
+	u8 toreturn;
+	memcpy(&toreturn, &buffer, 1);
+	return toreturn;
+}
+
+bool pkx_get_hti(u8* pkmn, const int htnumber) {
+	return (pkmn[0xDE] & (1 << htnumber)) == 1 << htnumber;
+}
+
+bool pkx_is_valid(u8* pkmn)
+{
+	if (pkmn == NULL)
+	{
+		return false;
+	}
+	
+	u16 sanity = *(u16*)(pkmn + 4);
+	u16 checksum = pkx_return_checksum(pkmn);
+	u16 species = pkx_get_species(pkmn);
+	
+	return sanity == 0 
+		   && checksum == *(u16*)(pkmn + 6)
+		   && species > 0
+		   && species <= 807; 
 }
