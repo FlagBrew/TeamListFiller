@@ -55,6 +55,25 @@ void infoDisp(const char* message) {
 	}
 }
 
+int confirmDisp() {
+	while (aptMainLoop()) {
+		hidScanInput();
+
+		if (hidKeysDown() & KEY_A) return 1;
+		if (hidKeysDown() & KEY_B) return 0;
+		
+		pp2d_begin_draw(GFX_TOP, GFX_LEFT);
+			pp2d_draw_texture(WARNINGTOP, 0, 0);
+			pp2d_draw_text_center(GFX_TOP, 95, FONT_SIZE_15, FONT_SIZE_15, WHITE, "Cartridge or digital copy?");
+			pp2d_draw_text_center(GFX_TOP, 130, FONT_SIZE_12, FONT_SIZE_12, WHITE, "A for cartridge, B for digital.");
+
+			pp2d_draw_on(GFX_BOTTOM, GFX_LEFT);
+			pp2d_draw_texture(WARNINGBOTTOM, 0, 0);
+		pp2d_end_draw();
+	}
+	return 0;
+}
+
 void freezeMsg(const char* message) {
 	pp2d_begin_draw(GFX_TOP, GFX_LEFT);
 		pp2d_draw_texture(WARNINGTOP, 0, 0);

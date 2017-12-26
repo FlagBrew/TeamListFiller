@@ -48,6 +48,7 @@ extern "C" {
 void GUIElementsInit();
 void gameSelectorMenu(int n);
 void infoDisp(const char* message);
+int confirmDisp();
 void freezeMsg(const char* message);
 #ifdef __cplusplus
 }

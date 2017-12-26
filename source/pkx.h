@@ -27,11 +27,7 @@ struct {
 	u8 pkmData[976][15];
 } personal;
 
-void pkx_set(u8* mainbuf, const int boxnumber, const int indexnumber, u8* pkmn);
-void pkx_set_as_it_is(u8* mainbuf, const int boxnumber, const int indexnumber, u8* pkmn);
 void pkx_get(u8* mainbuf, const int boxnumber, const int indexnumber, u8* pkmn);
-
-u32 pkx_lcrng(u32 seed);
 u32 pkx_get_save_address(const int boxnumber, const int indexnumber);
 u16 pkx_return_checksum(u8* data);
 
@@ -45,9 +41,6 @@ u16 pkx_get_item(u8* pkmn);
 u8 pkx_get_hp_type(u8* pkmn);
 u8 pkx_get_ot_gender(u8* pkmn);
 bool pkx_is_egg(u8* pkmn);
-void pkx_reroll_encryption_key(u8* pkmn);
-
-void pkx_reroll_pid(u8* pkmn);
 u32 pkx_get_pid(u8* pkmn);
 
 bool pkx_get_nickname_flag(u8* pkmn);
@@ -64,7 +57,6 @@ u16 pkx_get_tsv(u8* pkmn);
 u16 pkx_get_psv(u8* pkmn);
 u16 pkx_get_species(u8* pkmn);
 u8 pkx_get_level(u8* pkmn);
-void pkx_set_level(u8* pkmn, const int lv);
 
 bool pkx_is_shiny(u8* pkmn);
 u16 pkx_get_stat(u8* pkmn, const int stat);
@@ -78,35 +70,8 @@ u8 pkx_get_iv(u8* pkmn, const int stat);
 u8 pkx_get_ball(u8* pkmn);
 u8 pkx_get_version(u8* pkmn);
 
-void pkx_set_item(u8* pkmn, const u16 item);
-void pkx_set_gender(u8* pkmn, const u8 val);
-void pkx_set_form(u8* pkmn, const u8 val);
-void pkx_set_ball(u8* pkmn, const u8 val);
-void pkx_set_ot_gender(u8* pkmn, const u8 val);
-
-void pkx_set_tid(u8* pkmn, const u16 tid);
-void pkx_set_sid(u8* pkmn, const u16 sid);
-
-void pkx_set_ability(u8* pkmn, const u8 ability);
-void pkx_set_move(u8* pkmn, const u16 move, const int nmove);
-void pkx_set_egg_move(u8* pkmn, const u16 move, const int nmove);
-void pkx_set_ht(u8* pkmn, char* nick);
-void pkx_set_ht_gender(u8* pkmn, const u8 gender);
-void pkx_set_nature(u8* pkmn, const u8 nature);
-void pkx_set_friendship(u8* pkmn, const int val);
-void pkx_set_ot_friendship(u8* pkmn, const int val);
-void pkx_set_ev(u8* pkmn, u8 val, const int stat);
-void pkx_set_iv(u8* pkmn, u8 val, const int stat);
-void pkx_set_hp_type(u8* pkmn, const int val);
-void pkx_set_shiny(u8* pkmn, const bool shiny);
-void pkx_set_nickname(u8* pkmn, char* nick, const int dst);
-void pkx_set_ribbons(u8* pkmn, const int ribcat, const int ribnumber, const bool value);
 bool pkx_get_ribbons(u8* pkmn, const int ribcat, const int ribnumber);
-void pkx_set_hti(u8* pkmn, const int htnumber, const bool value);
 bool pkx_get_hti(u8* pkmn, const int htnumber);
-void pkx_set_flag(u8* pkmn, const int flgaddr, const int flgshift, const bool value);
-void pkx_set_pokerus(u8* pkmn);
-void pkx_set_nickname_flag(u8* pkmn);
 bool pkx_is_valid(u8* pkmn);
 
 #endif

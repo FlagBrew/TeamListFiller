@@ -33,7 +33,7 @@ extern "C" {
 #define GAMES 2
 
 int x_lookup[] = {534, 1618};
-int y_lookup[] = {565, 1333, 2100};
+int y_lookup[] = {561, 1325, 2093};
 int x_stat_lookup[] = {1090, 2180};
 int x_gender_lookup[] = {1018, 2108};
 
@@ -64,9 +64,7 @@ void initServices() {
 	hidInit();
 	pp2d_init();
 	GUIElementsInit();
-
 	mkdir("sdmc:/vgc", 777);
-	
 	loadPersonal();
 }
 
@@ -152,6 +150,8 @@ int main() {
 	
 	swkbdSetHintText(&swkbd, "Date of birth:");
 	swkbdInputText(&swkbd, dateofbirth, sizeof(dateofbirth));
+	
+	bool fromCartridge = confirmDisp();
 										
 	memcpy(&team_lookup[0], &mainbuf[0x50C4], 72);
 	
@@ -169,8 +169,8 @@ int main() {
 			if (team_lookup[team * 12 + (i * 2 + j) * 2] != 0xFF) {
 				pkx_get(mainbuf, (int)team_lookup[team * 12 + (i * 2 + j) * 2 + 1], (int)team_lookup[team * 12 + (i * 2 + j) * 2], tmp);
 				if (pkx_is_valid(tmp)) {
-					char* string = (char*)malloc(40);
-					char* stat = (char*)malloc(4);
+					char string[40];
+					char stat[6];
 					
 					freezeMsg("Writing species...");
 					snprintf(string, 40, "%s", species[pkx_get_species(tmp)]);
@@ -198,27 +198,22 @@ int main() {
 					}
 					
 					freezeMsg("Writing level...");
-					snprintf(stat, 4, "%d", pkx_get_level(tmp));
+					snprintf(stat, 6, "%d", pkx_get_level(tmp));
 					vgclist.plot_text_utf8(font, 30, x_stat_lookup[j], vgclist.getheight() - y_lookup[i] - 84, 0.0, stat, 0.0, 0.0, 0.0);
 					
 					freezeMsg("Writing stats...");
 					for (int t = 0; t < 6; t++) {
-						snprintf(stat, 4, "%d", pkx_get_stat(tmp, lookup[t]));
+						snprintf(stat, 6, "%d", pkx_get_stat(tmp, lookup[t]));
 						vgclist.plot_text_utf8(font, 30, x_stat_lookup[j], vgclist.getheight() - y_lookup[i] - 168 - t * 84, 0.0, stat, 0.0, 0.0, 0.0);
 					}
 					
 					freezeMsg("Writing gender...");	
 					if (pkx_get_gender(tmp) == 0)
-						//vgclist.cross(x_gender_lookup[j], vgclist.getheight() - y_lookup[i], 35, 35, 0, 0, 0);
 						vgclist.filledsquare(x_gender_lookup[j], vgclist.getheight() - y_lookup[i], x_gender_lookup[j] + 35, vgclist.getheight() - y_lookup[i] + 35, 0, 0, 0);
 					else if (pkx_get_gender(tmp) == 1)
-						//vgclist.cross(x_gender_lookup[j] + 70, vgclist.getheight() - y_lookup[i], 35, 35, 0, 0, 0);
 						vgclist.filledsquare(x_gender_lookup[j] + 70, vgclist.getheight() - y_lookup[i], x_gender_lookup[j] + 105, vgclist.getheight() - y_lookup[i] + 35, 0, 0, 0);
 					else if (pkx_get_gender(tmp) == 2)
-						//vgclist.cross(x_gender_lookup[j] + 140, vgclist.getheight() - y_lookup[i], 35, 35, 0, 0, 0);
 						vgclist.filledsquare(x_gender_lookup[j] + 140, vgclist.getheight() - y_lookup[i], x_gender_lookup[j] + 175, vgclist.getheight() - y_lookup[i] + 35, 0, 0, 0);				
-					free(stat);
-					free(string);
 				}
 			}
 		}
@@ -227,10 +222,23 @@ int main() {
 	freezeMsg("Writing personal infos...");
 	vgclist.plot_text_utf8(font, 30, 543, vgclist.getheight() - 273, 0.0, namebuf, 0.0, 0.0, 0.0);
 	vgclist.plot_text_utf8(font, 30, 1610, vgclist.getheight() - 273, 0.0, eventdates, 0.0, 0.0, 0.0);
-	vgclist.plot_text_utf8(font, 30, 543, vgclist.getheight() - 343, 0.0, playerID, 0.0, 0.0, 0.0);
-	vgclist.plot_text_utf8(font, 30, 1610, vgclist.getheight() - 343, 0.0, eventname, 0.0, 0.0, 0.0);
-	vgclist.plot_text_utf8(font, 30, 543, vgclist.getheight() - 408, 0.0, agedivision, 0.0, 0.0, 0.0);
-	vgclist.plot_text_utf8(font, 30, 1610, vgclist.getheight() - 408, 0.0, dateofbirth, 0.0, 0.0, 0.0);
+	vgclist.plot_text_utf8(font, 30, 543, vgclist.getheight() - 335, 0.0, playerID, 0.0, 0.0, 0.0);
+	vgclist.plot_text_utf8(font, 30, 1610, vgclist.getheight() - 335, 0.0, eventname, 0.0, 0.0, 0.0);
+	vgclist.plot_text_utf8(font, 30, 543, vgclist.getheight() - 400, 0.0, agedivision, 0.0, 0.0, 0.0);
+	vgclist.plot_text_utf8(font, 30, 1610, vgclist.getheight() - 400, 0.0, dateofbirth, 0.0, 0.0, 0.0);
+	
+	char teamName[44];
+	u16 src[22];
+	for (int i = 0; i < 22; i++)
+		src[i] = *(u16*)(mainbuf + 0x5040 + i*2);
+	utf16_to_utf8((uint8_t*)teamName, src, 44);
+	vgclist.plot_text_utf8(font, 30, 543, vgclist.getheight() - 455, 0.0, "1", 0.0, 0.0, 0.0);
+	vgclist.plot_text_utf8(font, 30, 590, vgclist.getheight() - 455, 0.0, teamName, 0.0, 0.0, 0.0);
+	
+	if (fromCartridge)
+		vgclist.filledsquare(1689, vgclist.getheight() - 455, 1855, vgclist.getheight() - 423, 0, 0, 0);
+	else
+		vgclist.filledsquare(1889, vgclist.getheight() - 455, 2000, vgclist.getheight() - 423, 0, 0, 0);
 
 	freezeMsg("Saving to SD card...");
 	chdir("sdmc:/vgc");
