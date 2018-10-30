@@ -1,0 +1,4 @@
+--atlas -f rgba8888 -z auto
+3dsborder.png
+warningbottom.png
+warningtop.png
