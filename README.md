@@ -10,13 +10,9 @@ Always **double check** and **make sure that the dumped data are coherent with y
 
 ***I'm NOT RESPONSIBLE if something will mismatch and you'll get penalizations during the tournament. Always DOUBLE CHECK!***
 
-## Compiling
-
-You need devKitPro, libctru, citro3d, freetype, libpng and zlib to be able to compile this.
-
 ## Screenshots
 
-![vgc18](assets/sample.png)
+![vgc18](https://i.imgur.com/ADSvf52.png)
  
 ## Credits
 
@@ -43,7 +39,3 @@ This file is part of TeamlistFiller
 >    You should have received a copy of the GNU General Public License
 >    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 >    See LICENSE for information.
-
----
-
-**If you appreciate my work, I appreciate [a coffee](https://www.paypal.me/BernardoGiordano) :)** 
